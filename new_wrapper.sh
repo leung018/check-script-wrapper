@@ -23,5 +23,8 @@ exec "$real_path" "\$@"
 EOF
 
 chmod +x "$wrapper_file"
-echo "Created wrappers/$cmd (wraps $real_path)"
-echo "Run ./setup.sh to activate."
+
+BIN_DIR="$HOME/.local/bin"
+mkdir -p "$BIN_DIR"
+ln -sf "$wrapper_file" "$BIN_DIR/$cmd"
+echo "Created wrappers/$cmd (wraps $real_path) and linked to $BIN_DIR/$cmd"
