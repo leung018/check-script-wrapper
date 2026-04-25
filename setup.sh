@@ -2,27 +2,17 @@
 set -e
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BIN_DIR="$HOME/.local/bin"
+WRAPPERS_DIR="$REPO_DIR/wrappers"
 
-mkdir -p "$BIN_DIR"
-
-if ! grep -qF "$BIN_DIR" "$HOME/.zshrc" 2>/dev/null; then
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
-    echo "Added $BIN_DIR to PATH in ~/.zshrc"
+if ! grep -qF "$WRAPPERS_DIR" "$HOME/.zshrc" 2>/dev/null; then
+    echo "export PATH=\"$WRAPPERS_DIR:\$PATH\"" >> "$HOME/.zshrc"
+    echo "Added $WRAPPERS_DIR to PATH in ~/.zshrc"
 fi
 
-ln -sf "$REPO_DIR/vpn_check.sh" "$BIN_DIR/vpn_check"
+ln -sf "$REPO_DIR/vpn_check.sh" "$HOME/.local/bin/vpn_check"
+mkdir -p "$HOME/.local/bin"
 chmod +x "$REPO_DIR/vpn_check.sh"
-echo "Installed vpn_check -> $BIN_DIR/vpn_check"
-
-for wrapper in "$REPO_DIR/wrappers"/*; do
-    [ -f "$wrapper" ] || continue
-    [[ "$(basename "$wrapper")" == ".gitkeep" ]] && continue
-    name="$(basename "$wrapper")"
-    ln -sf "$wrapper" "$BIN_DIR/$name"
-    chmod +x "$wrapper"
-    echo "Installed wrapper: $name -> $BIN_DIR/$name"
-done
+echo "Installed vpn_check -> $HOME/.local/bin/vpn_check"
 
 echo ""
 echo "Setup complete. Run: source ~/.zshrc"
