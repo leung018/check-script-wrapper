@@ -21,3 +21,4 @@ EOF
 chmod +x "$wrapper_file"
 echo "Created wrappers/$cmd (wraps $real_path)"
 echo "Ensure '$WRAPPERS_DIR' is on your PATH before system paths."
+echo "Run 'rehash' to use the new wrapper in this shell."
