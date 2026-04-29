@@ -1,0 +1,78 @@
+#!/bin/bash
+set -e
+
+real_app="${1:?Usage: $0 <path-to-RealApp.app>}"
+real_app="$(cd "$real_app" && pwd)"
+
+if [[ ! -d "$real_app" || "$real_app" != *.app ]]; then
+    echo "Error: '$real_app' is not a valid .app bundle." >&2
+    exit 1
+fi
+
+vpn_check_path="$HOME/.local/bin/vpn_check"
+if [[ ! -x "$vpn_check_path" ]]; then
+    echo "Error: vpn_check not found at $vpn_check_path. Run setup.sh first." >&2
+    exit 1
+fi
+
+app_name="$(defaults read "$real_app/Contents/Info" CFBundleName 2>/dev/null \
+    || defaults read "$real_app/Contents/Info" CFBundleDisplayName 2>/dev/null \
+    || basename "$real_app" .app)"
+slug="$(echo "$app_name" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/-$//')"
+
+output="$HOME/Applications/${app_name}.app"
+
+mkdir -p "$output/Contents/MacOS" "$output/Contents/Resources"
+
+cat > "$output/Contents/Info.plist" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>${app_name}</string>
+    <key>CFBundleDisplayName</key>
+    <string>${app_name}</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.wrapped.${slug}</string>
+    <key>CFBundleExecutable</key>
+    <string>wrapper</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+</dict>
+</plist>
+EOF
+
+cat > "$output/Contents/MacOS/wrapper" << WRAPPER
+#!/bin/bash
+VPN_CHECK="${vpn_check_path}"
+REAL_APP="${real_app}"
+if ! "\$VPN_CHECK" >/dev/null 2>&1; then
+    osascript -e 'display alert "VPN required" message "Connect NordVPN before launching."'
+    exit 1
+fi
+exec /usr/bin/open -a "\$REAL_APP" --args "\$@"
+WRAPPER
+
+chmod +x "$output/Contents/MacOS/wrapper"
+
+icon_name="$(defaults read "$real_app/Contents/Info" CFBundleIconFile 2>/dev/null || true)"
+if [[ -n "$icon_name" ]]; then
+    [[ "$icon_name" == *.icns ]] || icon_name="${icon_name}.icns"
+    icon_src="$real_app/Contents/Resources/$icon_name"
+    [[ -f "$icon_src" ]] && cp "$icon_src" "$output/Contents/Resources/AppIcon.icns"
+fi
+
+echo "Created $output"
+echo ""
+echo "Next steps:"
+echo "  1. Drag '${app_name}' from ~/Applications/ to the Dock (replace any pinned original)."
+echo "  2. Add the real app to Spotlight Privacy:"
+echo "     System Settings → Siri & Spotlight → Spotlight Privacy → drag in '$real_app'"
+echo "  3. Confirm '$real_app' is in NordVPN's killswitch app list."
