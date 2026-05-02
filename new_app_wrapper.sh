@@ -9,11 +9,13 @@ if [[ ! -d "$real_app" || "$real_app" != *.app ]]; then
     exit 1
 fi
 
-vpn_check_path="$HOME/.local/bin/vpn_check"
-if [[ ! -x "$vpn_check_path" ]]; then
-    echo "Error: vpn_check not found at $vpn_check_path. Run setup.sh first." >&2
+repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+vpn_check_src="$repo_dir/vpn_check.sh"
+if [[ ! -f "$vpn_check_src" ]]; then
+    echo "Error: vpn_check.sh not found at $vpn_check_src." >&2
     exit 1
 fi
+vpn_check_body="$(tail -n +2 "$vpn_check_src")"
 
 app_name="$(defaults read "$real_app/Contents/Info" CFBundleName 2>/dev/null \
     || defaults read "$real_app/Contents/Info" CFBundleDisplayName 2>/dev/null \
@@ -52,7 +54,7 @@ EOF
 cat > "$output/Contents/MacOS/wrapper" << WRAPPER
 #!/bin/bash
 REAL_APP="${real_app}"
-if ! ifconfig 2>/dev/null | grep -q "inet 10\.5\.0\."; then
+if ! ( ${vpn_check_body} ) >/dev/null 2>&1; then
     osascript -e 'display alert "VPN required" message "Connect NordVPN before launching."'
     exit 1
 fi
