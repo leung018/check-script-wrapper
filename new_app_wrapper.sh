@@ -51,9 +51,8 @@ EOF
 
 cat > "$output/Contents/MacOS/wrapper" << WRAPPER
 #!/bin/bash
-VPN_CHECK="${vpn_check_path}"
 REAL_APP="${real_app}"
-if ! "\$VPN_CHECK" >/dev/null 2>&1; then
+if ! ifconfig 2>/dev/null | grep -q "inet 10\.5\.0\."; then
     osascript -e 'display alert "VPN required" message "Connect NordVPN before launching."'
     exit 1
 fi
