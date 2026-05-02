@@ -22,6 +22,14 @@ app_name="$(defaults read "$real_app/Contents/Info" CFBundleName 2>/dev/null \
     || basename "$real_app" .app)"
 slug="$(echo "$app_name" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/-$//')"
 
+hidden_dir="$HOME/.hidden_from_spotlight"
+mkdir -p "$hidden_dir"
+new_real_app="$hidden_dir/$(basename "$real_app")"
+if [[ "$real_app" != "$new_real_app" ]]; then
+    mv "$real_app" "$new_real_app"
+    real_app="$new_real_app"
+fi
+
 output="$HOME/Applications/${app_name}.app"
 
 mkdir -p "$output/Contents/MacOS" "$output/Contents/Resources"
@@ -71,9 +79,12 @@ if [[ -n "$icon_name" ]]; then
 fi
 
 echo "Created $output"
+echo "Moved real app to $real_app (hidden from Spotlight)"
 echo ""
 echo "Next steps:"
 echo "  1. Drag '${app_name}' from ~/Applications/ to the Dock (replace any pinned original)."
-echo "  2. Add the real app to Spotlight Privacy:"
-echo "     System Settings → Siri & Spotlight → Spotlight Privacy → drag in '$real_app'"
+echo "  2. Exclude from Spotlight (one-time, reversible):"
+echo "     System Settings → Spotlight → Privacy → drag in '$hidden_dir'"
 echo "  3. Confirm '$real_app' is in NordVPN's killswitch app list."
+echo ""
+echo "  To reverse: move '$real_app' back to /Applications/ and remove '$hidden_dir' from Spotlight Privacy."
