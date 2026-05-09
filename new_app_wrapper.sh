@@ -17,9 +17,7 @@ if [[ ! -f "$vpn_check_src" ]]; then
 fi
 vpn_check_body="$(tail -n +2 "$vpn_check_src")"
 
-app_name="$(defaults read "$real_app/Contents/Info" CFBundleName 2>/dev/null \
-    || defaults read "$real_app/Contents/Info" CFBundleDisplayName 2>/dev/null \
-    || basename "$real_app" .app)"
+app_name="$(basename "$real_app" .app)"
 slug="$(echo "$app_name" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/-$//')"
 
 hidden_dir="$HOME/.hidden_from_spotlight"
