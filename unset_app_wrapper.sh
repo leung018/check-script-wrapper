@@ -9,5 +9,20 @@ if [[ ! -d "$wrapper" ]]; then
     exit 1
 fi
 
+real_app="$(grep '^REAL_APP=' "$wrapper/Contents/MacOS/wrapper" | cut -d= -f2- | tr -d '"')"
+
 rm -rf "$wrapper"
 echo "Removed $wrapper"
+
+if [[ -d "$real_app" ]]; then
+    mv "$real_app" "/Applications/${name}.app"
+    echo "Restored real app to /Applications/${name}.app"
+else
+    echo "Error: could not find real app to restore at '$real_app'" >&2
+    exit 1
+fi
+
+echo ""
+echo "Next steps:"
+echo "  Remove '$name' from NordVPN's Kill Switch app list if it was added."
+

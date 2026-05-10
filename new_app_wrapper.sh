@@ -17,10 +17,16 @@ if [[ ! -f "$vpn_check_src" ]]; then
 fi
 vpn_check_body="$(tail -n +2 "$vpn_check_src")"
 
-app_name="$(defaults read "$real_app/Contents/Info" CFBundleName 2>/dev/null \
-    || defaults read "$real_app/Contents/Info" CFBundleDisplayName 2>/dev/null \
-    || basename "$real_app" .app)"
+app_name="$(basename "$real_app" .app)"
 slug="$(echo "$app_name" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/-$//')"
+
+hidden_dir="$HOME/hidden_from_spotlight"
+mkdir -p "$hidden_dir"
+new_real_app="$hidden_dir/$(basename "$real_app")"
+if [[ "$real_app" != "$new_real_app" ]]; then
+    mv "$real_app" "$new_real_app"
+    real_app="$new_real_app"
+fi
 
 output="$HOME/Applications/${app_name}.app"
 
@@ -71,9 +77,13 @@ if [[ -n "$icon_name" ]]; then
 fi
 
 echo "Created $output"
+echo "Moved real app to $real_app (hidden from Spotlight)"
 echo ""
 echo "Next steps:"
-echo "  1. Drag '${app_name}' from ~/Applications/ to the Dock (replace any pinned original)."
-echo "  2. Add the real app to Spotlight Privacy:"
-echo "     System Settings → Siri & Spotlight → Spotlight Privacy → drag in '$real_app'"
-echo "  3. Confirm '$real_app' is in NordVPN's killswitch app list."
+echo "  1. Confirm '$hidden_dir' is excluded from Spotlight. If not:"
+echo "     System Settings → Spotlight → Search Privacy → add '$hidden_dir'"
+echo "  2. Add '$real_app' to NordVPN's Kill Switch app list."
+echo "  3. Replace any existing shortcuts or launchers for ${app_name} with the wrapper at $output."
+echo ""
+echo "  To reverse, run: unset_app_wrapper.sh '${app_name}'"
+echo "  (ls $hidden_dir to see all wrapped apps)"
