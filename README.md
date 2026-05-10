@@ -43,6 +43,8 @@ The command-line wrapper only checks VPN at launch time. If VPN disconnects whil
 
 Wraps a macOS `.app` bundle. The real app is moved to `~/hidden_from_spotlight/` and a lightweight wrapper app is placed in `~/Applications/`.
 
+> **Warning:** Please ensure the app's update mechanism is not affected by the script moving the real app to a different location.
+
 ### Wrap an app
 
 ```sh
