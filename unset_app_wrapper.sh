@@ -22,3 +22,7 @@ else
     exit 1
 fi
 
+echo ""
+echo "Next steps:"
+echo "  Remove '$name' from NordVPN's Kill Switch app list if it was added."
+
