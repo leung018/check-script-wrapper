@@ -55,11 +55,7 @@ Wraps a macOS `.app` bundle. The real app is moved to `~/hidden_from_spotlight/`
 - Creates a wrapper at `~/Applications/SomeApp.app`
 - The wrapper shows an alert and refuses to open if VPN is off
 
-After running, complete these steps:
-
-1. Confirm `~/hidden_from_spotlight/` is excluded from Spotlight (System Settings → Spotlight → Search Privacy).
-2. Add the real app from `~/hidden_from_spotlight/` to NordVPN's Kill Switch app list.
-3. Replace any existing shortcuts or launchers for the app with the wrapper in `~/Applications/`.
+After running, follow the next steps the script prints.
 
 ### Unwrap an app
 
